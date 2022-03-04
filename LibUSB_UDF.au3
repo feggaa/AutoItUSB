@@ -1,9 +1,22 @@
+; #INDEX# =======================================================================================================================
+; Title .........: LIBUSB UDF v1.0
+; AutoIt Version : 3.3
+; Language ......: English , Arabic
+; Description ...: Improved USB library for AutoIt.
+; Author(s) .....: Rabi3 Feggaa
+; GitHub ........: https://github.com/R3Pro/AutoItUSB
+; License .......: LGPL-2.1 License
+;
+; <https://github.com/libusb/libusb>
+; ===============================================================================================================================
 #include "AutoItObject.au3"
 #include "LibUSB_Constanst.au3"
 
 _AutoItObject_StartUp()
 
-Func USB($hContext = 0)
+
+
+Func USB($hContext = 0,$AutoInit = True)
     Local $oObj = _AutoItObject_Create()
 	_AutoItObject_AddMethod($oObj, "Init", libusb_init)
 	_AutoItObject_AddMethod($oObj, "Exit", libusb_exit)
@@ -22,12 +35,12 @@ Func USB($hContext = 0)
 	_AutoItObject_AddMethod($oObj, "Get_parent", libusb_get_parent)
 	_AutoItObject_AddMethod($oObj, "Get_max_packet_size", libusb_get_max_packet_size)
 	_AutoItObject_AddMethod($oObj, "Get_max_iso_packet_size", libusb_get_max_iso_packet_size)
-;~ 	_AutoItObject_AddDestructor($oObj, "")
+;~ 	_AutoItObject_AddDestructor($oObj, "_Dongle_Destructor")
     _AutoItObject_AddProperty($oObj, "DllSrc", $ELSCOPE_PRIVATE,@AutoItX64 ? "libusb-1.0_X64.dll" : "iLibUSB_32.dll")
 	_AutoItObject_AddProperty($oObj, "DLL",$ELSCOPE_PRIVATE)
 	_AutoItObject_AddProperty($oObj, "Context",$ELSCOPE_PRIVATE,$hContext)
 	_AutoItObject_AddProperty($oObj, "device_descriptorTag",$ELSCOPE_PRIVATE,$_libusb_device_descriptorTag)
-;~ 	$USB.init()
+	If $AutoInit Then $oObj.Init()
     Return $oObj
 EndFunc   ;==>_DongleObject
 
@@ -94,7 +107,7 @@ EndFunc   ;==>_DongleObject
 		$ahDevicesList[0] = $aCall[2] ;store libusb_device pointer
 		For $i = 1 To $aCall[0]
 			$ahDevicesList[$i] = DllStructGetData($tlibusb_device_list, 1, $i)
-			Local $device_descriptor = $USB.get_device_descriptor($ahDevicesList[$i])
+			Local $device_descriptor = $This.get_device_descriptor($ahDevicesList[$i])
 			If $VID = $device_descriptor.idVendor And $PID = $device_descriptor.idProduct Then Return $ahDevicesList[$i]
 		Next
 		Return False
